@@ -1,97 +1,87 @@
 {% extends 'base.html' %}
 
-{% block title %}Regras - Sistema de Auto-Resposta de Emails{% endblock %}
+{% block title %}Regras{% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1>Regras de Resposta</h1>
-        <a href="{{ url_for('add_rule') }}" class="btn btn-success">
-            <i class="bi bi-plus-circle me-1"></i> Nova Regra
-        </a>
-    </div>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4>Regras de Resposta</h4>
+    <a href="{{ url_for('add_rule') }}" class="btn btn-sm btn-outline-success">
+        Nova Regra
+    </a>
+</div>
 
-    <div class="card mb-4">
-        <div class="card-header bg-primary text-white">
-            <h5 class="card-title mb-0">Regras Cadastradas</h5>
-        </div>
-        <div class="card-body">
-            {% if rules %}
-                <div class="table-responsive">
-                    <table class="table table-striped table-hover">
-                        <thead>
+<div class="card mb-4">
+    <div class="card-body">
+        {% if rules %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Palavra-chave</th>
+                            <th>Resposta</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for rule in rules %}
                             <tr>
-                                <th>Palavra-chave</th>
-                                <th>Resposta</th>
-                                <th>Status</th>
-                                <th>Criada em</th>
-                                <th>Ações</th>
+                                <td class="fw-medium">{{ rule.keyword }}</td>
+                                <td class="text-muted small">{{ rule.response|truncate_text(80) }}</td>
+                                <td>
+                                    {% if rule.is_active %}
+                                        <span class="badge bg-success">Ativa</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">Inativa</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('edit_rule', rule_id=rule.id) }}" class="btn btn-sm btn-outline-primary me-1">
+                                        Editar
+                                    </a>
+                                    <form action="{{ url_for('delete_rule', rule_id=rule.id) }}" method="post" class="d-inline">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" 
+                                                onclick="return confirm('Tem certeza que deseja excluir esta regra?')">
+                                            Excluir
+                                        </button>
+                                    </form>
+                                </td>
                             </tr>
-                        </thead>
-                        <tbody>
-                            {% for rule in rules %}
-                                <tr>
-                                    <td class="fw-bold">{{ rule.keyword }}</td>
-                                    <td>{{ rule.response|truncate_text(100) }}</td>
-                                    <td>
-                                        {% if rule.is_active %}
-                                            <span class="badge bg-success">Ativa</span>
-                                        {% else %}
-                                            <span class="badge bg-danger">Inativa</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>{{ rule.created_at|format_datetime }}</td>
-                                    <td>
-                                        <a href="{{ url_for('edit_rule', rule_id=rule.id) }}" class="btn btn-sm btn-primary me-1" title="Editar">
-                                            <i class="bi bi-pencil"></i>
-                                        </a>
-                                        <form action="{{ url_for('delete_rule', rule_id=rule.id) }}" method="post" class="d-inline">
-                                            <button type="submit" class="btn btn-sm btn-danger" title="Excluir" 
-                                                    onclick="return confirm('Tem certeza que deseja excluir esta regra?')">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </form>
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            {% else %}
-                <div class="alert alert-info">
-                    <i class="bi bi-info-circle me-2"></i>
-                    Nenhuma regra cadastrada ainda. Clique em "Nova Regra" para adicionar.
-                </div>
-            {% endif %}
-        </div>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="text-muted">
+                Nenhuma regra cadastrada ainda. Clique em "Nova Regra" para adicionar.
+            </p>
+        {% endif %}
     </div>
+</div>
 
-    <div class="card mb-4">
-        <div class="card-header bg-info text-white">
-            <h5 class="card-title mb-0">Como Funcionam as Regras</h5>
+<div class="card mb-4">
+    <div class="card-body">
+        <h5 class="card-title mb-3">Como Funcionam as Regras</h5>
+        <p class="text-muted mb-3">O sistema de regras permite que o sistema envie respostas automáticas com base no conteúdo dos emails recebidos.</p>
+        
+        <div class="mb-3">
+            <h6 class="mb-2">Funcionamento:</h6>
+            <ol class="ps-3 text-muted small">
+                <li>Quando um email não lido é encontrado, o sistema analisa o assunto e o corpo do email.</li>
+                <li>Se alguma palavra-chave cadastrada for encontrada no conteúdo, a resposta associada é enviada.</li>
+                <li>Se várias palavras-chave forem encontradas, a resposta principal será a da primeira palavra-chave.</li>
+                <li>Se nenhuma palavra-chave for encontrada, uma resposta genérica é enviada.</li>
+            </ol>
         </div>
-        <div class="card-body">
-            <p>O sistema de regras permite que o sistema envie respostas automáticas com base no conteúdo dos emails recebidos.</p>
-            
-            <div class="alert alert-secondary">
-                <h6 class="fw-bold">Como funciona:</h6>
-                <ol>
-                    <li>Quando um email não lido é encontrado, o sistema analisa o assunto e o corpo do email.</li>
-                    <li>Se alguma palavra-chave cadastrada for encontrada no conteúdo, a resposta associada é enviada.</li>
-                    <li>Se várias palavras-chave forem encontradas, a resposta principal será a da primeira palavra-chave, com menções às demais.</li>
-                    <li>Se nenhuma palavra-chave for encontrada, uma resposta genérica é enviada.</li>
-                </ol>
-            </div>
-            
-            <div class="alert alert-primary">
-                <h6 class="fw-bold">Dicas para criar regras efetivas:</h6>
-                <ul>
-                    <li>Use palavras-chave específicas que aparecem com frequência em determinados tipos de emails.</li>
-                    <li>Crie respostas claras e que forneçam informações úteis.</li>
-                    <li>Lembre-se que a correspondência de palavras-chave é insensível a maiúsculas/minúsculas.</li>
-                    <li>Desative regras temporariamente marcando-as como inativas em vez de excluí-las.</li>
-                </ul>
-            </div>
+        
+        <div>
+            <h6 class="mb-2">Dicas para criar regras efetivas:</h6>
+            <ul class="ps-3 text-muted small">
+                <li>Use palavras-chave específicas que aparecem com frequência em determinados tipos de emails.</li>
+                <li>Crie respostas claras e que forneçam informações úteis.</li>
+                <li>A correspondência de palavras-chave é insensível a maiúsculas/minúsculas.</li>
+                <li>Desative regras temporariamente marcando-as como inativas em vez de excluí-las.</li>
+            </ul>
         </div>
     </div>
 </div>
