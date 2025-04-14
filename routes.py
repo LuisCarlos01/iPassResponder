@@ -8,10 +8,12 @@ import os
 import time
 import threading
 import logging
-from flask import render_template, request, redirect, url_for, flash, jsonify
+import pickle
+from flask import render_template, request, redirect, url_for, flash, jsonify, session
 from dotenv import load_dotenv
 from models import Rule, EmailLog
 from app import db
+from utils.oauth_helper import get_authorization_url, save_credentials
 
 # Load environment variables
 load_dotenv()
@@ -22,6 +24,9 @@ logger = logging.getLogger(__name__)
 # Global variables to track email monitoring thread
 email_thread = None
 stop_thread = False
+
+# Token storage
+TOKEN_PICKLE_PATH = 'token.pickle'
 
 def register_routes(app):
     """Register all application routes with the Flask app."""
@@ -201,6 +206,8 @@ def register_routes(app):
         """Check if the email monitoring thread is running."""
         global email_thread
         
+        has_oauth_token = os.path.exists(TOKEN_PICKLE_PATH)
+        
         status = {
             'running': email_thread is not None and email_thread.is_alive(),
             'email_configured': all([
@@ -208,25 +215,71 @@ def register_routes(app):
                 os.getenv('EMAIL_SENHA'),
                 os.getenv('SERVIDOR_IMAP'),
                 os.getenv('SERVIDOR_SMTP')
-            ])
+            ]) or has_oauth_token,
+            'oauth_configured': has_oauth_token
         }
         
         return jsonify(status)
+    
+    @app.route('/auth/gmail')
+    def auth_gmail():
+        """Inicia o fluxo de autenticação OAuth2 com o Gmail."""
+        try:
+            # Criar o fluxo de autenticação e obter a URL
+            flow, auth_url = get_authorization_url()
+            
+            # Salvar o estado do fluxo na sessão
+            session['oauth_flow'] = pickle.dumps(flow)
+            
+            # Redirecionar para a página de autenticação do Google
+            return redirect(auth_url)
+        except Exception as e:
+            logger.error(f"Erro ao iniciar autenticação OAuth2: {str(e)}")
+            flash(f'Erro ao iniciar autenticação: {str(e)}', 'error')
+            return redirect(url_for('settings'))
+    
+    @app.route('/auth/callback')
+    def auth_callback():
+        """Callback para a autenticação OAuth2."""
+        try:
+            # Recuperar o fluxo da sessão
+            flow = pickle.loads(session['oauth_flow'])
+            
+            # Processar a resposta e obter as credenciais
+            flow.fetch_token(authorization_response=request.url)
+            credentials = flow.credentials
+            
+            # Salvar as credenciais para uso futuro
+            save_credentials(credentials)
+            
+            # Limpar o fluxo da sessão
+            session.pop('oauth_flow', None)
+            
+            flash('Autenticação com Gmail realizada com sucesso!', 'success')
+        except Exception as e:
+            logger.error(f"Erro no callback OAuth2: {str(e)}")
+            flash(f'Erro na autenticação: {str(e)}', 'error')
+        
+        return redirect(url_for('settings'))
     
     @app.route('/manual-check', methods=['POST'])
     def manual_check():
         """Manually check for new emails once."""
         try:
-            # Get email configuration
-            email_usuario = os.getenv("EMAIL_USUARIO")
-            email_senha = os.getenv("EMAIL_SENHA")
-            servidor_imap = os.getenv("SERVIDOR_IMAP", "imap.gmail.com")
-            servidor_smtp = os.getenv("SERVIDOR_SMTP", "smtp.gmail.com")
-            porta_smtp = int(os.getenv("PORTA_SMTP", 587))
+            # Check if we have OAuth2 credentials
+            has_oauth_token = os.path.exists(TOKEN_PICKLE_PATH)
             
-            if not all([email_usuario, email_senha]):
-                flash('Email credentials are not configured. Please check settings.', 'error')
-                return redirect(url_for('index'))
+            if not has_oauth_token:
+                # Check traditional credentials
+                email_usuario = os.getenv("EMAIL_USUARIO")
+                email_senha = os.getenv("EMAIL_SENHA")
+                servidor_imap = os.getenv("SERVIDOR_IMAP", "imap.gmail.com")
+                servidor_smtp = os.getenv("SERVIDOR_SMTP", "smtp.gmail.com")
+                porta_smtp = int(os.getenv("PORTA_SMTP", 587))
+                
+                if not all([email_usuario, email_senha]):
+                    flash('Email credentials are not configured. Please check settings.', 'error')
+                    return redirect(url_for('index'))
             
             # Process emails in a separate thread
             threading.Thread(target=process_emails_once).start()

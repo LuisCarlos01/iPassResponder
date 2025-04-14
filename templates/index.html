@@ -16,6 +16,11 @@
                         <a href="{{ url_for('settings') }}" class="btn btn-sm btn-warning ms-2">Configurar</a>
                     </div>
                 {% else %}
+                    {% if oauth_configured %}
+                    <div class="alert alert-success py-2 small mb-3">
+                        Autenticação com Google configurada.
+                    </div>
+                    {% endif %}
                     {% if monitoring_active %}
                         <div class="d-flex align-items-center mb-3">
                             <span class="status-badge status-active"></span>
