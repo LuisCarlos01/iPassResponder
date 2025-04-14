@@ -62,10 +62,21 @@ def create_oauth_flow():
     Returns:
         Um objeto Flow da biblioteca google_auth_oauthlib.
     """
+    # Obter a URL base do Replit
+    domain = os.environ.get('REPLIT_DEV_DOMAIN', '')
+    
+    # Se não tiver o domínio, usar localhost para desenvolvimento local
+    if not domain:
+        redirect_uri = "http://localhost:8000/auth/callback"
+    else:
+        redirect_uri = f"https://{domain}/auth/callback"
+    
+    print(f"OAuth Redirect URI: {redirect_uri}")
+    
     return Flow.from_client_secrets_file(
         'client_secret.json',
         scopes=SCOPES,
-        redirect_uri='http://localhost:8000/auth/callback'
+        redirect_uri=redirect_uri
     )
 
 def save_credentials(credentials):
@@ -84,12 +95,12 @@ def get_authorization_url():
     Gera a URL para autorização OAuth2.
     
     Returns:
-        Tupla com (flow, url) onde flow é o objeto Flow e url é a URL de autorização.
+        A URL de autorização.
     """
     flow = create_oauth_flow()
-    authorization_url, _ = flow.authorization_url(
+    authorization_url, state = flow.authorization_url(
         access_type='offline',
         prompt='consent',
         include_granted_scopes='true'
     )
-    return flow, authorization_url
+    return authorization_url, state

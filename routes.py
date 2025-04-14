@@ -13,7 +13,7 @@ from flask import render_template, request, redirect, url_for, flash, jsonify, s
 from dotenv import load_dotenv
 from models import Rule, EmailLog
 from app import db
-from utils.oauth_helper import get_authorization_url, save_credentials
+from utils.oauth_helper import get_authorization_url, save_credentials, create_oauth_flow
 
 # Load environment variables
 load_dotenv()
@@ -230,10 +230,10 @@ def register_routes(app):
         """Inicia o fluxo de autenticação OAuth2 com o Gmail."""
         try:
             # Criar o fluxo de autenticação e obter a URL
-            flow, auth_url = get_authorization_url()
+            auth_url, state = get_authorization_url()
             
-            # Salvar o estado do fluxo na sessão
-            session['oauth_flow'] = pickle.dumps(flow)
+            # Salvar o estado na sessão
+            session['oauth_state'] = state
             
             # Redirecionar para a página de autenticação do Google
             return redirect(auth_url)
@@ -246,8 +246,8 @@ def register_routes(app):
     def auth_callback():
         """Callback para a autenticação OAuth2."""
         try:
-            # Recuperar o fluxo da sessão
-            flow = pickle.loads(session['oauth_flow'])
+            # Criar um novo fluxo de autenticação
+            flow = create_oauth_flow()
             
             # Processar a resposta e obter as credenciais
             flow.fetch_token(authorization_response=request.url)
@@ -256,8 +256,8 @@ def register_routes(app):
             # Salvar as credenciais para uso futuro
             save_credentials(credentials)
             
-            # Limpar o fluxo da sessão
-            session.pop('oauth_flow', None)
+            # Limpar o estado da sessão
+            session.pop('oauth_state', None)
             
             flash('Autenticação com Gmail realizada com sucesso!', 'success')
         except Exception as e:
