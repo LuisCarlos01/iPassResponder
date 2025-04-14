@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+
+{% block title %}Adicionar Regra - Sistema de Auto-Resposta de Emails{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Adicionar Nova Regra</h1>
+        <a href="{{ url_for('list_rules') }}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Voltar para Regras
+        </a>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="card-title mb-0">Formulário de Regra</h5>
+        </div>
+        <div class="card-body">
+            <form method="post" action="{{ url_for('add_rule') }}">
+                <div class="mb-3">
+                    <label for="keyword" class="form-label">Palavra-chave</label>
+                    <input type="text" class="form-control" id="keyword" name="keyword" required>
+                    <div class="form-text">Palavra ou frase que, quando encontrada em um email, ativará esta regra.</div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="response" class="form-label">Resposta</label>
+                    <textarea class="form-control" id="response" name="response" rows="6" required></textarea>
+                    <div class="form-text">Resposta automática que será enviada quando a palavra-chave for identificada.</div>
+                </div>
+
+                <div class="mb-3 form-check">
+                    <input type="checkbox" class="form-check-input" id="is_active" name="is_active" checked>
+                    <label class="form-check-label" for="is_active">Regra ativa</label>
+                    <div class="form-text">Desmarque esta opção para desativar a regra temporariamente.</div>
+                </div>
+
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-save me-1"></i> Salvar Regra
+                    </button>
+                    <a href="{{ url_for('list_rules') }}" class="btn btn-outline-secondary ms-2">Cancelar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header bg-info text-white">
+            <h5 class="card-title mb-0">Dicas para Criar Regras Efetivas</h5>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-light">
+                <h6 class="fw-bold">Exemplos de Palavras-chave</h6>
+                <ul>
+                    <li>Palavras únicas: "orçamento", "suporte", "cancelamento"</li>
+                    <li>Frases curtas: "solicitar orçamento", "problema com produto"</li>
+                </ul>
+            </div>
+
+            <div class="alert alert-light">
+                <h6 class="fw-bold">Exemplos de Respostas Efetivas</h6>
+                <div class="mb-3">
+                    <strong>Para palavra-chave "orçamento":</strong>
+                    <pre class="p-3 bg-dark text-light rounded">Obrigado por solicitar um orçamento.
+
+Para podermos atendê-lo melhor, precisamos das seguintes informações:
+1. Descrição detalhada do produto/serviço desejado
+2. Quantidade necessária
+3. Data de entrega desejada
+
+Assim que recebermos essas informações, enviaremos seu orçamento em até 24 horas úteis.</pre>
+                </div>
+
+                <div>
+                    <strong>Para palavra-chave "suporte":</strong>
+                    <pre class="p-3 bg-dark text-light rounded">Recebemos sua solicitação de suporte técnico.
+Um de nossos especialistas irá analisar seu caso em breve.
+
+Para agilizar o atendimento, informe:
+- Número de série do produto (se aplicável)
+- Descrição detalhada do problema
+- Capturas de tela do erro (se possível)
+
+Nosso horário de atendimento é de segunda a sexta, das 8h às 18h.</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

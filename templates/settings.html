@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+
+{% block title %}Configurações - Sistema de Auto-Resposta de Emails{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-4">Configurações</h1>
+
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="card-title mb-0">Configurações de Email</h5>
+        </div>
+        <div class="card-body">
+            <form method="post" action="{{ url_for('settings') }}">
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-2"></i>
+                    <strong>Nota:</strong> Para contas Gmail, recomendamos usar uma "senha de app" em vez da senha normal.
+                    <a href="https://support.google.com/accounts/answer/185833" target="_blank" class="alert-link">
+                        Saiba como criar uma senha de app
+                    </a>
+                </div>
+
+                <div class="mb-3">
+                    <label for="email_user" class="form-label">Email</label>
+                    <input type="email" class="form-control" id="email_user" name="email_user" 
+                           value="{{ env_vars.EMAIL_USUARIO }}" required>
+                    <div class="form-text">Endereço de email que será usado para ler e enviar respostas.</div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="email_password" class="form-label">Senha</label>
+                    <input type="password" class="form-control" id="email_password" name="email_password" required>
+                    <div class="form-text">Senha ou senha de app para autenticação.</div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label for="imap_server" class="form-label">Servidor IMAP</label>
+                        <input type="text" class="form-control" id="imap_server" name="imap_server" 
+                               value="{{ env_vars.SERVIDOR_IMAP }}" required>
+                        <div class="form-text">Servidor para receber emails.</div>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="smtp_server" class="form-label">Servidor SMTP</label>
+                        <input type="text" class="form-control" id="smtp_server" name="smtp_server" 
+                               value="{{ env_vars.SERVIDOR_SMTP }}" required>
+                        <div class="form-text">Servidor para enviar emails.</div>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="smtp_port" class="form-label">Porta SMTP</label>
+                        <input type="number" class="form-control" id="smtp_port" name="smtp_port" 
+                               value="{{ env_vars.PORTA_SMTP }}" required>
+                        <div class="form-text">Porta do servidor SMTP (geralmente 587).</div>
+                    </div>
+                </div>
+
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    <strong>Importante:</strong> As configurações são salvas apenas para a sessão atual neste exemplo.
+                    Para uma aplicação real, as configurações seriam salvas permanentemente.
+                </div>
+
+                <div class="mt-3">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-save me-1"></i> Salvar Configurações
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header bg-info text-white">
+            <h5 class="card-title mb-0">Servidores Comuns</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Provedor</th>
+                            <th>Servidor IMAP</th>
+                            <th>Servidor SMTP</th>
+                            <th>Porta SMTP</th>
+                            <th>Observações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Gmail</td>
+                            <td>imap.gmail.com</td>
+                            <td>smtp.gmail.com</td>
+                            <td>587</td>
+                            <td>Requer "Acesso a app menos seguro" ou "Senha de app"</td>
+                        </tr>
+                        <tr>
+                            <td>Outlook/Hotmail</td>
+                            <td>outlook.office365.com</td>
+                            <td>smtp.office365.com</td>
+                            <td>587</td>
+                            <td>Pode exigir autenticação em duas etapas</td>
+                        </tr>
+                        <tr>
+                            <td>Yahoo</td>
+                            <td>imap.mail.yahoo.com</td>
+                            <td>smtp.mail.yahoo.com</td>
+                            <td>587</td>
+                            <td>Requer "Senha de app" se a verificação em duas etapas estiver ativada</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block title %}Editar Regra - Sistema de Auto-Resposta de Emails{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Editar Regra</h1>
+        <a href="{{ url_for('list_rules') }}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Voltar para Regras
+        </a>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="card-title mb-0">Formulário de Edição</h5>
+        </div>
+        <div class="card-body">
+            <form method="post" action="{{ url_for('edit_rule', rule_id=rule.id) }}">
+                <div class="mb-3">
+                    <label for="keyword" class="form-label">Palavra-chave</label>
+                    <input type="text" class="form-control" id="keyword" name="keyword" value="{{ rule.keyword }}" required>
+                    <div class="form-text">Palavra ou frase que, quando encontrada em um email, ativará esta regra.</div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="response" class="form-label">Resposta</label>
+                    <textarea class="form-control" id="response" name="response" rows="6" required>{{ rule.response }}</textarea>
+                    <div class="form-text">Resposta automática que será enviada quando a palavra-chave for identificada.</div>
+                </div>
+
+                <div class="mb-3 form-check">
+                    <input type="checkbox" class="form-check-input" id="is_active" name="is_active" {% if rule.is_active %}checked{% endif %}>
+                    <label class="form-check-label" for="is_active">Regra ativa</label>
+                    <div class="form-text">Desmarque esta opção para desativar a regra temporariamente.</div>
+                </div>
+
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    <strong>Atenção!</strong> A alteração da regra afetará o processamento de novos emails.
+                </div>
+
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-save me-1"></i> Salvar Alterações
+                    </button>
+                    <a href="{{ url_for('list_rules') }}" class="btn btn-outline-secondary ms-2">Cancelar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

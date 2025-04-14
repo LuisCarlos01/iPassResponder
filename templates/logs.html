@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+
+{% block title %}Logs - Sistema de Auto-Resposta de Emails{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-4">Logs de Emails Processados</h1>
+
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="card-title mb-0">Histórico de Processamento</h5>
+        </div>
+        <div class="card-body">
+            {% if logs %}
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Remetente</th>
+                                <th>Assunto</th>
+                                <th>Regra Aplicada</th>
+                                <th>Status</th>
+                                <th>Data/Hora</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for log in logs %}
+                                <tr>
+                                    <td>{{ log.id }}</td>
+                                    <td title="{{ log.sender }}">{{ log.sender|truncate_text(25) }}</td>
+                                    <td title="{{ log.subject }}">{{ log.subject|truncate_text(30) }}</td>
+                                    <td>
+                                        {% if log.matched_rule %}
+                                            <span class="badge bg-info">{{ log.matched_rule }}</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Genérica</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if log.response_sent %}
+                                            <span class="badge bg-success">Resposta Enviada</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">Falha no Envio</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ log.processed_at|format_datetime }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-2"></i>
+                    Nenhum email foi processado ainda. Quando o sistema processar emails, o histórico aparecerá aqui.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="card mb-4">
+        <div class="card-header bg-info text-white">
+            <h5 class="card-title mb-0">Informações Sobre Logs</h5>
+        </div>
+        <div class="card-body">
+            <p>Esta página exibe um histórico de todos os emails processados pelo sistema.</p>
+            
+            <div class="alert alert-secondary">
+                <h6 class="fw-bold">Interpretando os Logs:</h6>
+                <ul>
+                    <li><strong>Remetente:</strong> O endereço de email do remetente da mensagem.</li>
+                    <li><strong>Assunto:</strong> O assunto do email recebido.</li>
+                    <li><strong>Regra Aplicada:</strong> A palavra-chave da regra que correspondeu ao conteúdo do email, ou "Genérica" se nenhuma regra específica foi acionada.</li>
+                    <li><strong>Status:</strong> Indica se a resposta foi enviada com sucesso ou se houve falha.</li>
+                    <li><strong>Data/Hora:</strong> Momento em que o email foi processado pelo sistema.</li>
+                </ul>
+            </div>
+            
+            <div class="alert alert-primary">
+                <h6 class="fw-bold">Ações Possíveis:</h6>
+                <ul>
+                    <li>Monitore o processamento de emails para verificar se as respostas estão sendo enviadas corretamente.</li>
+                    <li>Verifique se alguma regra específica está sendo acionada com frequência, o que pode indicar um assunto recorrente.</li>
+                    <li>Caso haja falhas frequentes no envio de respostas, verifique as configurações de email.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

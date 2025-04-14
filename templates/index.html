@@ -1,0 +1,188 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - Sistema de Auto-Resposta de Emails{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-4">Dashboard</h1>
+
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">Status do Monitoramento</h5>
+                </div>
+                <div class="card-body">
+                    {% if not email_configured %}
+                        <div class="alert alert-warning">
+                            <i class="bi bi-exclamation-triangle me-2"></i>
+                            <strong>Configuração Incompleta!</strong> Configure suas credenciais de email para começar.
+                            <a href="{{ url_for('settings') }}" class="btn btn-sm btn-warning ms-2">Configurar</a>
+                        </div>
+                    {% else %}
+                        {% if monitoring_active %}
+                            <div class="d-flex align-items-center mb-3">
+                                <span class="status-badge status-active"></span>
+                                <h5 class="mb-0 text-success">Monitoramento Ativo</h5>
+                            </div>
+                            <p>O sistema está monitorando novos emails a cada 5 minutos.</p>
+                            <form action="{{ url_for('stop_monitoring') }}" method="post" class="d-inline">
+                                <button type="submit" class="btn btn-danger">
+                                    <i class="bi bi-stop-circle me-1"></i> Parar Monitoramento
+                                </button>
+                            </form>
+                        {% else %}
+                            <div class="d-flex align-items-center mb-3">
+                                <span class="status-badge status-inactive"></span>
+                                <h5 class="mb-0 text-danger">Monitoramento Inativo</h5>
+                            </div>
+                            <p>O sistema não está verificando novos emails.</p>
+                            <form action="{{ url_for('start_monitoring') }}" method="post" class="d-inline">
+                                <button type="submit" class="btn btn-success">
+                                    <i class="bi bi-play-circle me-1"></i> Iniciar Monitoramento
+                                </button>
+                            </form>
+                        {% endif %}
+                        
+                        <form action="{{ url_for('manual_check') }}" method="post" class="d-inline mt-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-envelope-check me-1"></i> Verificar Agora
+                            </button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header bg-info text-white">
+                    <h5 class="card-title mb-0">Estatísticas</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-sm-6 mb-3">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h2 class="fw-bold text-primary">{{ rules|length }}</h2>
+                                    <p class="mb-0">Regras Ativas</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 mb-3">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h2 class="fw-bold text-success">{{ logs|length }}</h2>
+                                    <p class="mb-0">Emails Processados</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Regras Recentes</h5>
+                    <a href="{{ url_for('list_rules') }}" class="btn btn-sm btn-light">Ver Todas</a>
+                </div>
+                <div class="card-body">
+                    {% if rules %}
+                        <div class="list-group">
+                            {% for rule in rules %}
+                                <div class="list-group-item rule-item">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <h5 class="mb-0 fw-bold">{{ rule.keyword }}</h5>
+                                        {% if rule.is_active %}
+                                            <span class="badge bg-success">Ativa</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">Inativa</span>
+                                        {% endif %}
+                                    </div>
+                                    <p class="mb-1">{{ rule.response|truncate_text(100) }}</p>
+                                    <small class="text-muted">Criada em: {{ rule.created_at|format_datetime }}</small>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle me-2"></i>
+                            Nenhuma regra cadastrada. 
+                            <a href="{{ url_for('add_rule') }}" class="alert-link">Adicionar regra</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Logs Recentes</h5>
+                    <a href="{{ url_for('view_logs') }}" class="btn btn-sm btn-light">Ver Todos</a>
+                </div>
+                <div class="card-body">
+                    {% if logs %}
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Remetente</th>
+                                        <th>Regra</th>
+                                        <th>Status</th>
+                                        <th>Data</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for log in logs %}
+                                        <tr>
+                                            <td title="{{ log.sender }}">{{ log.sender|truncate_text(20) }}</td>
+                                            <td>{{ log.matched_rule or "Genérica" }}</td>
+                                            <td>
+                                                {% if log.response_sent %}
+                                                    <span class="badge bg-success">Enviado</span>
+                                                {% else %}
+                                                    <span class="badge bg-danger">Falha</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ log.processed_at|format_datetime }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle me-2"></i>
+                            Nenhum email processado ainda.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Auto-refresh status every 30 seconds
+    setInterval(function() {
+        fetch('{{ url_for("check_status") }}')
+            .then(response => response.json())
+            .then(data => {
+                if (data.running) {
+                    document.querySelector('.status-badge').classList.remove('status-inactive');
+                    document.querySelector('.status-badge').classList.add('status-active');
+                } else {
+                    document.querySelector('.status-badge').classList.remove('status-active');
+                    document.querySelector('.status-badge').classList.add('status-inactive');
+                }
+            });
+    }, 30000);
+</script>
+{% endblock %}
