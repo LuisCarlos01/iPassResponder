@@ -40,20 +40,24 @@ def register_routes(app):
         # Check email monitoring status
         monitoring_active = email_thread is not None and email_thread.is_alive()
         
+        # Check if OAuth token exists
+        oauth_configured = os.path.exists(TOKEN_PICKLE_PATH)
+        
         # Check if email is configured
         email_configured = all([
             os.getenv('EMAIL_USUARIO'),
             os.getenv('EMAIL_SENHA'),
             os.getenv('SERVIDOR_IMAP'),
             os.getenv('SERVIDOR_SMTP')
-        ])
+        ]) or oauth_configured
         
         return render_template(
             'index.html', 
             rules=rules, 
             logs=logs, 
             monitoring_active=monitoring_active,
-            email_configured=email_configured
+            email_configured=email_configured,
+            oauth_configured=oauth_configured
         )
     
     @app.route('/rules')

@@ -167,6 +167,20 @@
                         statusBadge.classList.add('status-inactive');
                     }
                 }
+                
+                // Atualizar status de autenticação OAuth
+                if (data.oauth_configured) {
+                    // Se não existir o alerta de OAuth, adiciona
+                    if (!document.querySelector('.oauth-status-alert')) {
+                        const alertDiv = document.createElement('div');
+                        alertDiv.className = 'alert alert-success py-2 small mb-3 oauth-status-alert';
+                        alertDiv.textContent = 'Autenticação com Google configurada.';
+                        const monitoringHeader = document.querySelector('.card-title');
+                        if (monitoringHeader) {
+                            monitoringHeader.parentNode.insertBefore(alertDiv, monitoringHeader.nextSibling);
+                        }
+                    }
+                }
             });
     }, 30000);
 </script>
