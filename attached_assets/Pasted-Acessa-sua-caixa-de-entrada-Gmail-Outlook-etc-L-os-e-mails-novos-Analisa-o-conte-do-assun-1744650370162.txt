@@ -1,0 +1,203 @@
+Acessa sua caixa de entrada (Gmail, Outlook, etc.).
+
+Lê os e-mails novos.
+
+Analisa o conteúdo (assunto + corpo).
+
+Aplica as regras de resposta automática (como o script anterior).
+
+Gera a resposta.
+
+Pode salvar isso ou já preparar para envio.
+
+🧠 Visão Geral da Solução
+Vamos usar:
+
+IMAP para acessar e-mails recebidos.
+
+smtplib para envio (se quiser responder direto).
+
+O script de regras que já criamos.
+
+📦 Pré-requisitos
+Conta de e-mail (de preferência Gmail ou Outlook).
+
+Se for Gmail, precisa ativar o acesso a "Apps menos seguros" ou usar a API do Gmail (mais seguro).
+
+Instalar dependências:
+
+bash
+Copiar
+Editar
+pip install imaplib2 email
+🧾 Script Completo com Leitura de E-mail + Análise
+python
+Copiar
+Editar
+import imaplib
+import email
+import smtplib
+from email.mime.text import MIMEText
+from regras_email import gerar_resposta_assistente
+
+# Configurações de login
+EMAIL_USUARIO = "seuemail@gmail.com"
+EMAIL_SENHA = "sua_senha"
+SERVIDOR_IMAP = "imap.gmail.com"
+SERVIDOR_SMTP = "smtp.gmail.com"
+PORTA_SMTP = 587
+
+def conectar_email():
+    mail = imaplib.IMAP4_SSL(SERVIDOR_IMAP)
+    mail.login(EMAIL_USUARIO, EMAIL_SENHA)
+    mail.select("inbox")
+    return mail
+
+def buscar_emails_nao_lidos(mail):
+    status, mensagens = mail.search(None, 'UNSEEN')
+    return mensagens[0].split()
+
+def processar_email(mail, num):
+    status, dados = mail.fetch(num, '(RFC822)')
+    mensagem = email.message_from_bytes(dados[0][1])
+    
+    assunto = mensagem["subject"]
+    remetente = mensagem["from"]
+
+    # Pegar corpo do e-mail
+    corpo = ""
+    if mensagem.is_multipart():
+        for parte in mensagem.walk():
+            if parte.get_content_type() == "text/plain":
+                corpo = parte.get_payload(decode=True).decode()
+    else:
+        corpo = mensagem.get_payload(decode=True).decode()
+
+    print(f"\n📩 Novo e-mail de: {remetente}")
+    print(f"Assunto: {assunto}")
+    print(f"Corpo: {corpo[:200]}...")
+
+    resposta = gerar_resposta_assistente(assunto, corpo)
+    print(f"🤖 Resposta gerada: {resposta}")
+    
+    enviar_resposta_email(remetente, assunto, resposta)
+
+def enviar_resposta_email(destinatario, assunto_original, mensagem):
+    servidor = smtplib.SMTP(SERVIDOR_SMTP, PORTA_SMTP)
+    servidor.starttls()
+    servidor.login(EMAIL_USUARIO, EMAIL_SENHA)
+    
+    resposta = MIMEText(mensagem)
+    resposta["Subject"] = f"Re: {assunto_original}"
+    resposta["From"] = EMAIL_USUARIO
+    resposta["To"] = destinatario
+    
+    servidor.sendmail(EMAIL_USUARIO, destinatario, resposta.as_string())
+    servidor.quit()
+    print(f"📤 Resposta enviada para {destinatario}")
+
+# ----------- Execução -----------------
+
+if __name__ == "__main__":
+    mail = conectar_email()
+    mensagens = buscar_emails_nao_lidos(mail)
+
+    print(f"🔍 Emails não lidos: {len(mensagens)}")
+    
+    for num in mensagens:
+        processar_email(mail, num)
+✅ O que ele faz:
+Lê os e-mails não lidos da caixa de entrada.
+
+Extrai assunto e corpo.
+
+Aplica as regras inteligentes com base no script regras_email.py.
+
+Gera e envia uma resposta automática.
+
+⚠️ Segurança
+Use variáveis de ambiente ou .env para guardar senha (os.environ['EMAIL_SENHA']).
+
+Pode usar Gmail API com OAuth2 pra segurança máxima.
+
+Se quiser, posso te ajudar a:
+
+Subir isso como serviço automático.
+
+Guardar as mensagens num painel com React.
+
+Deixar você editar as regras no painel também.
+
+Quer avançar com isso e ir pra parte do painel visual? Ou prefere terminar a automação de e-mails primeiro com a segurança (tipo via Gmail API)?
+
+
+
+
+
+
+
+Você disse:
+Monte o prompt com base nesse texto anterior e me mostra para eu enviar para o "CURSOR" "Agente - ia"
+
+
+O ChatGPT disse:
+Perfeito, Luiz! Aqui está um prompt completo e estruturado com base no que você quer — pronto pra você colar no CURSOR ou no seu agente “Agente - ia” para automatizar leitura e resposta de e-mails com regras inteligentes:
+
+💬 Prompt para o agente "Agente - ia"
+csharp
+Copiar
+Editar
+Objetivo:
+Criar um agente automatizado que acesse minha caixa de entrada de e-mails, leia os e-mails não lidos e gere uma resposta automática com base em regras que eu mesmo defini.
+
+Requisitos:
+
+1. O agente deve:
+   - Conectar-se à caixa de entrada via IMAP.
+   - Ler os e-mails não lidos.
+   - Extrair o **assunto** e o **corpo** da mensagem.
+   - Aplicar regras personalizadas para gerar uma resposta com base no conteúdo do e-mail.
+   - Enviar essa resposta automaticamente usando SMTP.
+   - Marcar o e-mail como lido (opcional).
+
+2. As regras devem ser definidas em um módulo separado (`regras_email.py`) no seguinte formato:
+```python
+REGRAS = [
+    {"palavra_chave": "ingresso", "resposta": "Olá! Para dúvidas sobre ingressos, acesse nosso portal ou envie seu CPF para mais detalhes."},
+    {"palavra_chave": "reembolso", "resposta": "Olá! Para solicitar reembolso, envie o número do pedido e CPF do titular."},
+    {"palavra_chave": "troca", "resposta": "Olá! Trocas são permitidas até 24h antes do evento. Envie os dados do titular e do novo participante."},
+    # ... outras regras personalizadas
+]
+O agente deve:
+
+Analisar se o conteúdo do e-mail contém alguma das palavras-chave.
+
+Se houver correspondência, enviar a resposta personalizada.
+
+Caso contrário, enviar uma resposta genérica como: "Olá! Recebemos sua mensagem. Em breve retornaremos com mais informações. Caso queira agilizar o atendimento, envie seu CPF e o assunto da dúvida."
+
+A estrutura do código precisa ser modular e organizada:
+
+main.py → onde ocorre a execução principal
+
+regras_email.py → onde ficam as regras de resposta
+
+utils/email_handler.py → funções auxiliares de conexão, leitura e envio de e-mails
+
+Extras (não obrigatórios agora):
+
+Suporte para adicionar regras pelo painel futuramente
+
+Uso de variáveis de ambiente para armazenar login e senha com segurança
+
+Logs dos e-mails lidos e respondidos
+
+Tecnologias:
+
+Python 3.11+
+
+IMAP/SMTP
+
+Modularidade no código
+
+Segurança com .env (preferencialmente)
