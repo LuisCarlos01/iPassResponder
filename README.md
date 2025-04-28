@@ -1,132 +1,208 @@
-# Sistema de Auto-Resposta de Emails
+# iPassResponder - Sistema de Resposta Automática de E-mail
 
-Um sistema automatizado para monitoramento de emails e envio de respostas automáticas com base em regras configuráveis. Este aplicativo permite configurar palavras-chave específicas e respostas predefinidas para automatizar a comunicação via email.
+O iPassResponder é um sistema que automatiza respostas a e-mails com base em palavras-chave identificadas no conteúdo da mensagem, usando processamento de linguagem natural (NLP) para melhorar a detecção.
 
-![Sistema de Auto-Resposta de Emails](generated-icon.png)
+## Principais Funcionalidades
 
-## 📋 Funcionalidades
+- **Análise de conteúdo**: Utiliza NLTK para processar e analisar o texto dos e-mails, detectando palavras-chave com tolerância a variações
+- **Respostas automáticas**: Envia respostas pré-definidas com base nas palavras-chave detectadas
+- **Prevenção de duplicidade**: Rastreia e-mails já respondidos para evitar múltiplas respostas
+- **Gerenciamento de regras**: Sistema flexível para adicionar/remover regras de respostas
+- **Agendamento**: Verificação automática de novos e-mails em intervalos configuráveis
+- **Registro de atividades**: Sistema de logs para acompanhamento de todas as operações
+- **Aprendizado de máquina**: Classificação de e-mails com ML para melhorar a precisão (opcional)
 
-- **Monitoramento Automático:** Verifica continuamente novos emails na caixa de entrada
-- **Resposta Baseada em Regras:** Envia respostas automáticas baseadas em palavras-chave detectadas
-- **Interface Web Minimalista:** Dashboard intuitivo para gerenciar todo o sistema
-- **Gerenciamento de Regras:** Adicionar, editar e remover regras de respostas facilmente
-- **Histórico de Atividades:** Visualização de logs detalhados de todos os emails processados
-- **Suporte Multi-provedor:** Compatível com Gmail, Outlook, Yahoo e outros provedores de email
+## Estrutura do Projeto
 
-## 🛠️ Tecnologias Utilizadas
+```
+iPassResponder/
+│
+├── utils/                     # Módulos utilitários
+│   ├── email_handler.py       # Manipulação de e-mail (conexão, leitura, resposta)
+│   ├── text_analyzer.py       # Análise de texto com NLTK
+│   ├── rule_manager.py        # Gerenciamento de regras de resposta
+│   ├── scheduler.py           # Agendamento de verificações
+│   └── ml_classifier.py       # Classificação com machine learning (opcional)
+│
+├── data/                      # Diretório para dados persistentes
+│   ├── rules.json             # Regras de resposta em formato JSON
+│   └── responded_emails.pickle # Registro de e-mails respondidos
+│
+├── models/                    # Modelos de ML treinados
+│   └── email_classifier.pkl   # Modelo de classificação de e-mails
+│
+├── logs/                      # Arquivos de log
+│
+├── app.py                     # Aplicação web Flask
+├── config.py                  # Configurações centralizadas
+├── main.py                    # Script principal
+├── models.py                  # Modelos de banco de dados SQLAlchemy
+├── requirements.txt           # Dependências do projeto
+├── .env                       # Variáveis de ambiente (não versionado)
+└── .env.example               # Exemplo de configuração de variáveis de ambiente
+```
 
-- **Backend:** Python 3 com Flask
-- **Banco de Dados:** PostgreSQL
-- **ORM:** SQLAlchemy
-- **Email:** Bibliotecas imaplib2 e smtplib para manipulação de emails
-- **Frontend:** HTML, CSS com Bootstrap (design minimalista)
-- **Servidor:** Gunicorn para produção
+## Instalação
 
-## 🚀 Configuração e Instalação
+1. Clone o repositório:
+```bash
+git clone https://github.com/seu-usuario/iPassResponder.git
+cd iPassResponder
+```
 
-### Pré-requisitos
+2. Crie e ative um ambiente virtual:
+```bash
+python -m venv venv
+source venv/bin/activate  # Linux/Mac
+venv\Scripts\activate     # Windows
+```
 
-- Python 3.8+
-- PostgreSQL
-- Conta de email com acesso IMAP/SMTP
+3. Instale as dependências:
+```bash
+pip install -r requirements.txt
+```
 
-### Passo a Passo para Instalação
+4. Baixe os recursos do NLTK necessários:
+```bash
+python -c "import nltk; nltk.download(['punkt', 'stopwords', 'rslp'])"
+```
 
-1. **Clone o repositório:**
+5. Configure o arquivo .env com suas credenciais:
+```bash
+cp .env.example .env
+# Edite o arquivo .env com suas informações
+```
+
+6. Configure os arquivos de segurança:
+```bash
+cp config.py.example config.py
+# Edite o arquivo config.py para substituir os valores padrão por valores seguros
+```
+
+## Segurança e Boas Práticas
+
+Este projeto contém um arquivo `.gitignore` configurado para proteger informações sensíveis. Preste atenção especial aos seguintes pontos:
+
+### Arquivos Sensíveis
+
+Os seguintes arquivos contêm informações sensíveis e **NÃO** devem ser versionados:
+
+- `.env` - Contém variáveis de ambiente e credenciais
+- `config.py` - Contém configurações com possíveis valores sensíveis
+- `client_secret.json` - Credenciais de autenticação Google
+- `token.pickle` - Tokens de acesso persistentes
+- `*.key`, `*.pem` - Chaves privadas e certificados
+- Banco de dados em `instance/` - Contém dados do sistema
+
+### Setup Inicial para Novos Desenvolvedores
+
+1. Copie os arquivos de exemplo:
+   ```bash
+   cp .env.example .env
+   cp config.py.example config.py
    ```
-   git clone https://github.com/seu-usuario/sistema-auto-resposta-email.git
-   cd sistema-auto-resposta-email
+
+2. Gere novas chaves secretas para o Flask:
+   ```bash
+   python -c "import secrets; print(f'SECRET_KEY={secrets.token_hex(32)}')"
+   python -c "import secrets; print(f'SESSION_SECRET={secrets.token_hex(32)}')"
+   ```
+   Adicione estas chaves ao seu arquivo `.env`
+
+3. Para Gmail, crie uma senha de aplicativo:
+   - Ative a autenticação de dois fatores em sua conta Google
+   - Acesse a seção "Senhas de App" nas configurações de segurança
+   - Crie uma nova senha para "Email" ou "Outro"
+   - Use essa senha no arquivo `.env`
+
+4. Nunca commit arquivos sensíveis:
+   ```bash
+   git add .
+   git status   # Verifique se arquivos sensíveis não estão sendo versionados
    ```
 
-2. **Instale as dependências:**
-   ```
-   pip install -r requirements.txt
-   ```
-
-3. **Configure as variáveis de ambiente:**
-   
-   Crie um arquivo `.env` na raiz do projeto com as seguintes informações:
-   ```
-   # Configurações do Banco de Dados
-   DATABASE_URL=postgresql://user:password@localhost:5432/auto_resposta_db
-   
-   # Configurações de Email
-   EMAIL_USUARIO=seu_email@gmail.com
-   EMAIL_SENHA=sua_senha_de_app
-   SERVIDOR_IMAP=imap.gmail.com
-   SERVIDOR_SMTP=smtp.gmail.com
-   PORTA_SMTP=587
+5. Crie os diretórios necessários:
+   ```bash
+   mkdir -p data models logs
    ```
 
-4. **Inicialize o banco de dados:**
-   ```
-   python -c "from app import db; db.create_all()"
-   ```
+## Uso
 
-5. **Inicie o servidor:**
-   ```
-   gunicorn --bind 0.0.0.0:5000 main:app
-   ```
+### Como Script Independente
 
-6. **Acesse a interface web:**
-   
-   Abra o navegador e acesse `http://localhost:5000`
+Para executar uma verificação única:
+```bash
+python main.py
+```
 
-## 📝 Instruções de Uso
+Para executar com agendamento automático:
+```bash
+python main.py --schedule --interval 5
+```
 
-### Configurando o Sistema
+### Com Machine Learning
 
-1. **Configuração de Email:**
-   - Acesse a página de "Configurações"
-   - Insira seu endereço de email, senha e informações do servidor
-   - Para Gmail: É necessário usar uma **Senha de App**. 
-     - Ative a autenticação de dois fatores na sua conta Google
-     - Acesse a seção "Senhas de App" nas configurações de segurança
-     - Crie uma nova senha de aplicativo para "Email" ou "Outro"
-     - Use esta senha gerada no campo "Senha" das configurações do sistema
+Para treinar o modelo de ML:
+```bash
+python main.py --train
+```
 
-2. **Criando Regras de Resposta:**
-   - Acesse a página "Regras" e clique em "Nova Regra"
-   - Digite a palavra-chave que será buscada nos emails recebidos
-   - Escreva a resposta automática que será enviada quando a palavra-chave for detectada
-   - Marque "Regra ativa" para habilitar imediatamente
+Para usar o modelo de ML na classificação:
+```bash
+python main.py --ml
+```
 
-3. **Iniciando o Monitoramento:**
-   - No Dashboard, clique em "Iniciar" para começar o monitoramento automático
-   - O sistema verificará novos emails a cada 5 minutos
-   - Também é possível fazer uma verificação manual clicando em "Verificar Agora"
+### Como Aplicação Web
 
-### Como Funciona
+Para iniciar a aplicação web:
+```bash
+python run.py
+```
 
-1. O sistema se conecta à sua caixa de entrada via IMAP
-2. Procura emails não lidos (recebidos recentemente)
-3. Analisa o assunto e corpo de cada email buscando palavras-chave configuradas
-4. Quando uma correspondência é encontrada, envia a resposta associada
-5. Mantém um registro detalhado de todos os emails processados
-6. Se várias palavras-chave forem encontradas, usa a primeira correspondência
+Ou com Gunicorn:
+```bash
+gunicorn -w 4 wsgi:app
+```
 
-## 🔍 Solução de Problemas
+## Configuração
 
-### Problemas Comuns
+O sistema pode ser configurado através do arquivo `.env`. As principais configurações incluem:
 
-- **Erro de Autenticação Gmail:** É necessário usar uma "Senha de App" específica para o Gmail, não a senha normal da conta.
-- **Servidor Não Responde:** Verifique se os endereços dos servidores IMAP e SMTP estão corretos.
-- **Emails Não São Detectados:** Confirme se o sistema está ativo no Dashboard.
+- `EMAIL_USUARIO`: Endereço de e-mail para conectar
+- `EMAIL_SENHA`: Senha ou senha de aplicativo para o e-mail
+- `SERVIDOR_IMAP`: Servidor IMAP (padrão: imap.gmail.com)
+- `SERVIDOR_SMTP`: Servidor SMTP (padrão: smtp.gmail.com)
+- `PORTA_SMTP`: Porta SMTP (padrão: 587)
+- `CHECK_INTERVAL`: Intervalo entre verificações em minutos (padrão: 5)
+- `USE_ML_MODEL`: Usar modelo de ML para classificação (true/false)
+- `MIN_SIMILARITY_SCORE`: Limiar de similaridade para correspondência (0.0-1.0)
 
-### Verificação de Logs
+## Adicionando Novas Regras
 
-Os logs detalhados do sistema podem ser acessados na interface, na seção "Logs". Eles mostram todos os emails processados e possíveis erros de processamento.
+As regras podem ser adicionadas de três maneiras:
 
-## 📊 Próximos Passos
+1. **Via Banco de Dados**: Através da interface web
+2. **Via Arquivo JSON**: Editando o arquivo `data/rules.json`
+3. **Programaticamente**: Usando a classe `RuleManager`
 
-Funcionalidades planejadas para futuras versões:
+Exemplo de arquivo de regras:
+```json
+[
+  {
+    "palavra_chave": "orçamento",
+    "resposta": "Obrigado por solicitar um orçamento. Para podermos atendê-lo melhor, precisamos das seguintes informações..."
+  },
+  {
+    "palavra_chave": "suporte",
+    "resposta": "Recebemos sua solicitação de suporte técnico. Um de nossos especialistas irá analisar seu caso em breve..."
+  }
+]
+```
 
-- **Análise de sentimento:** Identificação automática do tom dos emails
-- **Suporte a anexos:** Envio de arquivos predefinidos nas respostas
-- **Integração com CRM:** Conexão com sistemas de gestão de relacionamento
-- **Interface mobile:** Versão responsiva otimizada para dispositivos móveis
-- **Análise avançada de NLP:** Processamento de linguagem natural para melhor entendimento de conteúdo
+## Contribuição
 
-## 📄 Licença
+Contribuições são bem-vindas! Por favor, sinta-se à vontade para enviar um Pull Request.
 
-Este projeto está licenciado sob a [Licença MIT](LICENSE).
+## Licença
+
+Este projeto está licenciado sob a licença MIT.

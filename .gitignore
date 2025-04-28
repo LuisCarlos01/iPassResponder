@@ -1,0 +1,121 @@
+# Arquivos de ambiente e configurações
+.env
+.env.*
+!.env.example
+*.env
+config.py
+!config.py.example
+
+# Arquivos de segredos e credenciais
+client_secret.json
+token.pickle
+*_secret.*
+*.pem
+*.key
+*.keystore
+*.p12
+*.pfx
+*.jks
+credentials.json
+.netrc
+.pgpass
+google_credentials.json
+oauth*
+.google-cookie
+
+# Diretórios de dados persistentes
+data/
+data/responded_emails.pickle
+data/rules.json
+
+# Diretórios do modelo ML
+models/
+*.pkl
+*.h5
+*.model
+*.joblib
+*.pt
+*.onnx
+
+# Logs
+logs/
+*.log
+email_autoresponder.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Cache Python
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+htmlcov/
+.ruff_cache/
+.mypy_cache/
+
+# Ambiente virtual
+venv/
+.env/
+env/
+ENV/
+.venv/
+virtualenv/
+
+# Arquivos temporários
+temp/
+tmp/
+*.tmp
+*.bak
+*.swp
+*.swo
+
+# Banco de dados
+*.db
+*.sqlite
+*.sqlite3
+instance/
+*.sql
+
+# Assets e uploads
+attached_assets/
+uploads/
+media/
+staticfiles/
+
+# Arquivos específicos do projeto
+uv.lock
+regras_email.py.backup
+generated-icon.png
+
+# Arquivos IDE/editor
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+.ipynb_checkpoints
+*.sublime-project
+*.sublime-workspace
+.project
+.classpath
+.settings/
+
+# Arquivos de dependências
+node_modules/
+.python-version
+__pypackages__/
+.pdm.toml
+pip-wheel-metadata/
+
+# Arquivos específicos do ambiente replit
+.replit
+replit.nix
+.upm/
+.config/
+
+# NUNCA adicione estas linhas ao .gitignore - elas existem apenas para documentação
+# ------------------------------------------------------------------------------
+# O script generate_secrets.py DEVE ser versionado, pois ajuda a configurar o ambiente
+# !generate_secrets.py

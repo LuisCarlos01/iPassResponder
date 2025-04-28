@@ -1,0 +1,63 @@
+"""
+Arquivo de configuração do sistema de resposta automática de e-mails.
+
+Este módulo centraliza todas as configurações do sistema, carregando
+variáveis de ambiente e definindo valores padrão.
+"""
+
+import os
+import logging
+from dotenv import load_dotenv
+
+# Carregar variáveis de ambiente do arquivo .env
+load_dotenv()
+
+# Configurações de e-mail
+EMAIL_USUARIO = os.getenv("EMAIL_USUARIO")
+EMAIL_SENHA = os.getenv("EMAIL_SENHA")
+SERVIDOR_IMAP = os.getenv("SERVIDOR_IMAP", "imap.gmail.com")
+SERVIDOR_SMTP = os.getenv("SERVIDOR_SMTP", "smtp.gmail.com")
+PORTA_SMTP = int(os.getenv("PORTA_SMTP", 587))
+
+# Configurações de logging
+LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
+LOG_FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+LOG_FILE = os.getenv("LOG_FILE", "email_autoresponder.log")
+
+# Configuração de agendamento
+CHECK_INTERVAL = int(os.getenv("CHECK_INTERVAL", 5))  # em minutos
+
+# Configurações do banco de dados
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///email_autoresponder.db")
+
+# Configurações do Flask
+# ATENÇÃO: Em produção, substitua estas chaves por valores seguros e aleatórios
+SECRET_KEY = os.getenv("SECRET_KEY", "SUBSTITUA_POR_CHAVE_SECRETA_SEGURA")
+SESSION_SECRET = os.getenv("SESSION_SECRET", "SUBSTITUA_POR_SESSAO_SECRETA_SEGURA")
+
+# Configurações de NLP
+MIN_SIMILARITY_SCORE = float(os.getenv("MIN_SIMILARITY_SCORE", 0.7))  # limiar de similaridade para correspondência
+
+# Configurações de modelo de ML (opcional)
+MODEL_FILE = os.getenv("MODEL_FILE", "models/email_classifier.pkl")
+USE_ML_MODEL = os.getenv("USE_ML_MODEL", "False").lower() in ("true", "1", "t")
+
+# Configuração de resposta genérica
+RESPOSTA_GENERICA = os.getenv("RESPOSTA_GENERICA", 
+                             "Olá! Recebemos sua mensagem. Em breve retornaremos com mais informações. "
+                             "Caso queira agilizar o atendimento, envie seu contato e o assunto da dúvida.")
+
+def configure_logging():
+    """Configura o sistema de logging."""
+    log_level = getattr(logging, LOG_LEVEL.upper(), logging.INFO)
+    
+    logging.basicConfig(
+        level=log_level,
+        format=LOG_FORMAT,
+        handlers=[
+            logging.FileHandler(LOG_FILE),
+            logging.StreamHandler()
+        ]
+    )
+    
+    return logging.getLogger(__name__) 
